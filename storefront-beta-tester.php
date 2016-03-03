@@ -334,6 +334,6 @@ elseif ( ! class_exists('Storefront_Beta_Tester') ) {
  */
 if ( ! function_exists('woo_storefront_not_installed') ) {
 	function woo_storefront_not_installed() {
-		echo '<div class="notice notice-error is-dismissible"><p>' . sprintf( __('Storefront Beta Tester requires %s to be installed.', 'storefront-beta-tester'), '<a class="thickbox" href="' . esc_url( wp_nonce_url( self_admin_url( 'theme-install.php?tab=theme-information&theme=storefront&TB_iframe=true&width=744&height=800' ), 'install-theme_storefront' ) ) . '">Storefront</a>') . '</p></div>';
+		echo '<div class="notice notice-error is-dismissible"><p>' . sprintf( __('Storefront Beta Tester requires %s to be installed.', 'storefront-beta-tester'), '<a href="' . esc_url( wp_nonce_url( self_admin_url( 'update.php?action=install-theme&theme=storefront' ), 'install-theme_storefront' ) ) . '">Storefront</a>') . '</p></div>';
 	}
 }
