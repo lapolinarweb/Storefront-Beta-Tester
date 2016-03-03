@@ -4,7 +4,7 @@
  * Plugin URI: https://github.com/seb86/Storefront-Beta-Tester
  * Description: Run bleeding edge versions of Storefront from Github. This will replace your installed version of the theme Storefront with the latest tagged release on Github - use with caution, and not on production sites. You have been warned.
  * Version: 1.0.0
- * Author: Sébastien Dumont
+ * Author: SÃ©bastien Dumont
  * Author URI: http://sebastiendumont.com
  *
  * Text Domain: storefront-beta-tester
@@ -25,7 +25,7 @@ if ( ! defined('ABSPATH') ) {
  * Curiously, there is not a constant for getting the theme directory so we have 
  * to use get_theme_root() function instead, so this is what we have to do.
  */
-if ( ! file_exists( trailingslashit( get_theme_root('storefront') . '/style.css' ) ) ) {
+if ( ! file_exists( trailingslashit( get_theme_root() ) . 'storefront/style.css' ) ) {
 	add_action('admin_notices', 'woo_storefront_not_installed');
 }
 elseif ( ! class_exists('Storefront_Beta_Tester') ) {
