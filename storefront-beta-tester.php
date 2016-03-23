@@ -3,7 +3,7 @@
  * Plugin Name: Storefront Beta Tester
  * Plugin URI: https://github.com/seb86/Storefront-Beta-Tester
  * Description: Run bleeding edge versions of Storefront from Github. This will replace your installed version of the theme Storefront with the latest tagged release on Github - use with caution, and not on production sites. You have been warned.
- * Version: 1.0.0
+ * Version: 1.0.1
  * Author: Sébastien Dumont
  * Author URI: http://sebastiendumont.com
  *
@@ -89,7 +89,7 @@ elseif ( ! class_exists('Storefront_Beta_Tester') ) {
 			$this->config[ 'new_version' ]  = $this->get_latest_tag();
 			$this->config[ 'last_updated' ] = $this->get_date();
 			$this->config[ 'description' ]  = $this->get_description();
-			$this->config[ 'zip_url' ]      = 'https://github.com/woothemes/storefront/zipball/' . $this->config[ 'new_version' ];
+			$this->config[ 'zip_url' ]      = 'https://github.com/woothemes/storefront/releases/download/version%2F' . $this->config[ 'new_version' ]. '/storefront.zip';
 		}
 
 		/**
@@ -315,8 +315,9 @@ elseif ( ! class_exists('Storefront_Beta_Tester') ) {
 		public function plugin_meta_links( $links, $file, $data, $status ) {
 			if ( $file == plugin_basename( __FILE__ ) ) {
 				$author1 = '<a href="' . $data[ 'AuthorURI' ] . '">' . $data[ 'Author' ] . '</a>';
-				$author2 = '<a href="https://bradgriffin.me/">Brad Griffin</a>';
-				$links[ 1 ] = sprintf( __( 'By %s' ), sprintf( __( '%s and %s' ), $author1, $author2 ) );
+				$author2 = '<a href="http://jameskoster.co.uk/">James Koster</a>';
+				$author3 = '<a href="https://bradgriffin.me/">Brad Griffin</a>';
+				$links[ 1 ] = sprintf( __( 'By %s' ), sprintf( __( '%s and %s and %s' ), $author1, $author2, $author3 ) );
 			}
 			return $links;
 		}
