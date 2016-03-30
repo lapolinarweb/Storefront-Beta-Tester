@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: Storefront Beta Tester 1.0.0\n"
 "Report-Msgid-Bugs-To: https://github.com/seb86/Storefront-Beta-Tester/"
 "issues\n"
-"POT-Creation-Date: 2016-03-03 17:46+0100\n"
+"POT-Creation-Date: 2016-03-30 16:15+0200\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -22,17 +22,24 @@ msgstr ""
 "X-Textdomain-Support: yes\n"
 "X-Poedit-SearchPath-0: .\n"
 
-#: storefront-beta-tester.php:319
+#: storefront-beta-tester.php:196
+msgid ""
+"Storefront is a robust and flexible WordPress theme, designed by "
+"WooCommerce creators WooThemes to help you make the most out of using "
+"WooCommerce to power your online store."
+msgstr ""
+
+#: storefront-beta-tester.php:328
 #, php-format
 msgid "By %s"
 msgstr ""
 
-#: storefront-beta-tester.php:319
+#: storefront-beta-tester.php:328
 #, php-format
-msgid "%s and %s"
+msgid "%s and %s and %s"
 msgstr ""
 
-#: storefront-beta-tester.php:337
+#: storefront-beta-tester.php:346
 #, php-format
 msgid "Storefront Beta Tester requires %s to be installed."
 msgstr ""

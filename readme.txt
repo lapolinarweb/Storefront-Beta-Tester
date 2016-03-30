@@ -5,7 +5,7 @@ Contributors: sebd86, burlesonbrad
 Tags: storefront, theme, woocommerce, woothemes, automattic, beta, beta tester, bleeding edge
 Requires at least: 4.2
 Tested up to: 4.4.1
-Stable Tag: 1.0.0
+Stable Tag: 1.0.2
 
 Run bleeding edge versions of Storefront from Github. This will replace your installed version of the theme Storefront with the latest tagged release on Github - use with caution, and not on production sites. You have been warned.
 
@@ -19,9 +19,17 @@ Just like with any plugin, this will not check for updates on every admin page l
 
 Based on WP_GitHub_Updater by Joachim Kudish and code by Patrick Garman.
 
-Forked from the WooCommerce Beta Tester by Mike Jolly and Claudio Sanches.
+Forked from the WooCommerce Beta Tester by Mike Jolley and Claudio Sanches.
 
 == Changelog ==
+
+= 1.0.2 =
+* Corrected issue using deprecated function get_theme_data() and replaced it with wp_get_theme().
+* Disabled the use of the upgrader_source_selection filter.
+* Improved fetching of Github data and detection of the latest version.
+
+= 1.0.1 =
+* Corrected the zip url that is downloaded when a new release is made available.
 
 = 1.0.0 =
 * First release.
