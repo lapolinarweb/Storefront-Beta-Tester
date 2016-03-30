@@ -226,11 +226,8 @@ elseif ( ! class_exists('Storefront_Beta_Tester') ) {
 			// Update tags
 			$this->set_update_args();
 
-			// The new version
-			$new_version = str_replace( 'version/', '', $this->config['new_version'] );
-
 			// check the version and decide if it's new
-			if ( version_compare( $new_version, $this->config['version'], '>' ) ) {
+			if ( version_compare( $this->config['new_version'], $this->config['version'], '>' ) ) {
 				$response              = new stdClass();
 				$response->theme       = $this->config['slug'];
 				$response->new_version = $this->config['new_version'];
