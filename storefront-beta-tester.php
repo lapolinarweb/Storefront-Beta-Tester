@@ -3,7 +3,7 @@
  * Plugin Name: Storefront Beta Tester
  * Plugin URI: https://github.com/seb86/Storefront-Beta-Tester
  * Description: Run bleeding edge versions of Storefront from Github. This will replace your installed version of the theme Storefront with the latest tagged release on Github - use with caution, and not on production sites. You have been warned.
- * Version: 1.0.1
+ * Version: 1.0.2
  * Author: Sébastien Dumont
  * Author URI: http://sebastiendumont.com
  *
@@ -71,7 +71,7 @@ elseif ( ! class_exists('Storefront_Beta_Tester') ) {
 			);
 			add_filter('pre_set_site_transient_update_themes', array($this, 'api_check'));
 			add_filter('themes_api', array($this, 'get_theme_info'), 10, 3);
-			add_filter('upgrader_source_selection', array($this, 'upgrader_source_selection'), 10, 3);
+			//add_filter('upgrader_source_selection', array($this, 'upgrader_source_selection'), 10, 3);
 			add_action('init', array($this, 'init_textdomain'));
 			add_filter('plugin_row_meta', array($this, 'plugin_meta_links'), 10, 4);
 		}
@@ -85,11 +85,13 @@ elseif ( ! class_exists('Storefront_Beta_Tester') ) {
 			$this->config[ 'theme_name' ]   = $theme_data['Name'];
 			$this->config[ 'version' ]      = $theme_data['Version'];
 			$this->config[ 'author' ]       = $theme_data['Author'];
-			$this->config[ 'homepage' ]     = $theme_data['ThemeURI'];
-			$this->config[ 'new_version' ]  = $this->get_latest_tag();
+			$this->config[ 'homepage' ]     = esc_url_raw($theme_data['ThemeURI']);
+			$this->config[ 'new_version' ]  = str_replace( 'version/', '', $this->get_latest_tag() );
+			$this->config[ 'new_release' ]  = $this->get_latest_tag();
 			$this->config[ 'last_updated' ] = $this->get_date();
 			$this->config[ 'description' ]  = $this->get_description();
-			$this->config[ 'zip_url' ]      = 'https://github.com/woothemes/storefront/releases/download/version%2F' . $this->config[ 'new_version' ]. '/storefront.zip';
+			$this->config[ 'zip_url' ]      = 'https://github.com/woothemes/storefront/releases/download/' . $this->config[ 'new_release' ]. '/storefront.zip';
+			$this->config[ 'screenshot' ]   = 'https://raw.githubusercontent.com/woothemes/storefront/master/screenshot.png';
 		}
 
 		/**
@@ -104,7 +106,8 @@ elseif ( ! class_exists('Storefront_Beta_Tester') ) {
 		/**
 		 * Get New Version from GitHub
 		 *
-		 * @version 1.0.1
+		 * @since 1.0.0
+		 * @version 1.0.2
 		 * @return int $version the version number
 		 */
 		public function get_latest_tag() {
@@ -115,7 +118,7 @@ elseif ( ! class_exists('Storefront_Beta_Tester') ) {
 				$raw_response = wp_remote_get( trailingslashit( $this->config['api_url'] ) . 'releases' );
 
 				if ( is_wp_error( $raw_response ) ) {
-					return false;
+					return '<div id="message" class="error"><p>' . $raw_response->get_error_message() . '</p></div>';
 				}
 
 				$releases       = json_decode( $raw_response['body'] );
@@ -143,6 +146,7 @@ elseif ( ! class_exists('Storefront_Beta_Tester') ) {
 		 * Get GitHub Data from the specified repository
 		 *
 		 * @since 1.0.0
+		 * @version 1.0.2
 		 * @return array $github_data the data
 		 */
 		public function get_github_data() {
@@ -155,7 +159,7 @@ elseif ( ! class_exists('Storefront_Beta_Tester') ) {
 					$github_data = wp_remote_get( $this->config['api_url'] );
 
 					if ( is_wp_error( $github_data ) ) {
-						return false;
+						return '<div id="message" class="error"><p>' . $github_data->get_error_message() . '</p></div>';
 					}
 
 					$github_data = json_decode( $github_data['body'] );
@@ -189,7 +193,7 @@ elseif ( ! class_exists('Storefront_Beta_Tester') ) {
 		 */
 		public function get_description() {
 			$_description = $this->get_github_data();
-			return ! empty( $_description->description ) ? $_description->description : false;
+			return ! empty( $_description->description ) ? $_description->description : __('Storefront is a robust and flexible WordPress theme, designed by WooCommerce creators WooThemes to help you make the most out of using WooCommerce to power your online store.', 'storefront-beta-tester');
 		}
 
 		/**
@@ -199,7 +203,7 @@ elseif ( ! class_exists('Storefront_Beta_Tester') ) {
 		 * @return object $data the data
 		 */
 		public function get_theme_data() {
-			return get_theme_data( get_theme_roots() . '/' . $this->config['theme_file'] );
+			return wp_get_theme( $this->config['slug'] );
 		}
 
 		/**
@@ -222,11 +226,12 @@ elseif ( ! class_exists('Storefront_Beta_Tester') ) {
 			// Update tags
 			$this->set_update_args();
 
-			// check the version and decide if it's new
-			$update = version_compare( $this->config['new_version'], $this->config['version'], '>' );
+			// The new version
+			$new_version = str_replace( 'version/', '', $this->config['new_version'] );
 
-			if ( $update ) {
-				$response              = new stdClass;
+			// check the version and decide if it's new
+			if ( version_compare( $new_version, $this->config['version'], '>' ) ) {
+				$response              = new stdClass();
 				$response->theme       = $this->config['slug'];
 				$response->new_version = $this->config['new_version'];
 				$response->slug        = $this->config['slug'];
@@ -260,19 +265,22 @@ elseif ( ! class_exists('Storefront_Beta_Tester') ) {
 			// Update tags
 			$this->set_update_args();
 
-			$response->slug          = $this->config['slug'];
-			$response->theme         = $this->config['slug'];
-			$response->name          = $this->config['theme_name'];
-			$response->theme_name    = $this->config['theme_name'];
-			$response->version       = $this->config['new_version'];
-			$response->author        = $this->config['author'];
-			$response->homepage      = $this->config['homepage'];
-			$response->requires      = $this->config['requires'];
-			$response->tested        = $this->config['tested'];
-			$response->downloaded    = 0;
-			$response->last_updated  = $this->config['last_updated'];
-			$response->sections      = array( 'description' => $this->config['description'] );
-			$response->download_link = $this->config['zip_url'];
+			$response->slug           = $this->config['slug'];
+			$response->theme          = $this->config['slug'];
+			$response->name           = $this->config['theme_name'];
+			$response->theme_name     = $this->config['theme_name'];
+			$response->version        = $this->config['new_version'];
+			$response->author         = $this->config['author'];
+			$response->homepage       = $this->config['homepage'];
+			$response->requires       = $this->config['requires'];
+			$response->tested         = $this->config['tested'];
+			$response->screenshot_url = $this->config[ 'screenshot '];
+			$response->downloaded     = 0;
+			$response->last_updated   = $this->config['last_updated'];
+			$response->sections       = array( 'description' => $this->config['description'] );
+			$response->download_link  = $this->config['zip_url'];
+			$response->package        = $this->config['zip_url'];
+			$response->file_name      = $this->config['slug'] . '.zip';
 
 			return $response;
 		}
