@@ -228,17 +228,11 @@ elseif ( ! class_exists('Storefront_Beta_Tester') ) {
 
 			// check the version and decide if it's new
 			if ( version_compare( $this->config['new_version'], $this->config['version'], '>' ) ) {
-				$response              = new stdClass();
-				$response->theme       = $this->config['slug'];
-				$response->new_version = $this->config['new_version'];
-				$response->slug        = $this->config['slug'];
-				$response->url         = $this->config['github_url'];
-				$response->package     = $this->config['zip_url'];
-
-				// If response is false, don't alter the transient
-				if ( false !== $response ) {
-					$transient->response[ $this->config['theme_file'] ] = $response;
-				}
+				$transient->response[ $this->config['slug'] ] = array(
+					'new_version' => $this->config['new_version'],
+					'package' => $this->config['zip_url'],
+					'url' => $this->config['github_url']
+				);
 			}
 
 			return $transient;

@@ -27,6 +27,7 @@ Forked from the WooCommerce Beta Tester by Mike Jolley and Claudio Sanches.
 * Corrected issue using deprecated function get_theme_data() and replaced it with wp_get_theme().
 * Disabled the use of the upgrader_source_selection filter.
 * Improved fetching of Github data and detection of the latest version.
+* Removed plugin update method and fixed the response for returning the theme data.
 
 = 1.0.1 =
 * Corrected the zip url that is downloaded when a new release is made available.
