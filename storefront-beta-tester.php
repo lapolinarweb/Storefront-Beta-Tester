@@ -2,13 +2,14 @@
 /**
  * Plugin Name: Storefront Beta Tester
  * Plugin URI: https://github.com/seb86/Storefront-Beta-Tester
- * Description: Run bleeding edge versions of Storefront from Github. This will replace your installed version of the theme Storefront with the latest tagged release on Github - use with caution, and not on production sites. You have been warned.
- * Version: 1.0.2
+ * Description: Run bleeding edge versions of Storefront from Github.
+ * Version: 1.0.3
  * Author: Sébastien Dumont
  * Author URI: http://sebastiendumont.com
+ * GitHub Plugin URI: https://github.com/seb86/Storefront-Beta-Tester
  *
  * Text Domain: storefront-beta-tester
- * Domain Path: languages
+ * Domain Path: /languages/
  *
  * Requires at least: 4.2
  * Tested up to: 4.4.2
@@ -26,77 +27,97 @@ if ( ! defined('ABSPATH') ) {
  * to use get_theme_root() function instead, so this is what we have to do.
  */
 if ( ! file_exists( trailingslashit( get_theme_root() ) . 'storefront/style.css' ) ) {
-	add_action('admin_notices', 'woo_storefront_not_installed');
+	add_action( 'admin_notices', 'storefront_not_installed' );
 }
-elseif ( ! class_exists('Storefront_Beta_Tester') ) {
+elseif ( ! class_exists( 'Storefront_Beta_Tester' ) ) {
 
 	/**
 	 * Storefront_Beta_Tester Main Class
 	 */
 	class Storefront_Beta_Tester {
 
-		/** Config */
+		/**
+		 * Config
+		 *
+		 * @access private
+		 */
 		private $config = array();
 
-		/** Github Data */
+		/**
+		 * Github Data
+		 * 
+		 * @access protected
+		 * @static
+		 */
 		protected static $_instance = null;
 
 		/**
 		 * Main Instance
+		 * 
+		 * @access public
+		 * @static
 		 */
 		public static function instance() {
 			return self::$_instance = is_null( self::$_instance ) ? new self() : self::$_instance;
 		}
 
 		/**
-		 * Ran on activation to flush update cache
+		 * Run on activation to flush update cache.
+		 * 
+		 * @access public
+		 * @static
 		 */
 		public static function activate() {
-			delete_site_transient('update_themes');
-			delete_site_transient('storefront_latest_tag');
+			delete_site_transient( 'update_themes' );
+			delete_site_transient( 'storefront_latest_tag' );
 		}
 
 		/**
 		 * Constructor
+		 * 
+		 * @access public
 		 */
 		public function __construct() {
 			$this->config = array(
 				'theme_file'         => 'storefront/style.css',
 				'slug'               => 'storefront',
 				'proper_folder_name' => 'storefront',
-				'api_url'            => 'https://api.github.com/repos/woothemes/storefront',
-				'github_url'         => 'https://github.com/woothemes/storefront',
+				'api_url'            => 'https://api.github.com/repos/woocommerce/storefront',
+				'github_url'         => 'https://github.com/woocommerce/storefront',
 				'requires'           => '4.2',
 				'tested'             => '4.4.2'
 			);
-			add_filter('pre_set_site_transient_update_themes', array($this, 'api_check'));
-			add_filter('themes_api', array($this, 'get_theme_info'), 10, 3);
-			//add_filter('upgrader_source_selection', array($this, 'upgrader_source_selection'), 10, 3);
-			add_action('init', array($this, 'init_textdomain'));
-			add_filter('plugin_row_meta', array($this, 'plugin_meta_links'), 10, 4);
+
+			add_filter( 'pre_set_site_transient_update_themes', array( $this, 'api_check' ) );
+			add_filter( 'themes_api', array( $this, 'get_theme_info' ), 10, 3 );
+			add_action( 'init', array( $this, 'load_textdomain' ) );
+			add_filter( 'plugin_row_meta', array( $this, 'plugin_meta_links' ), 10, 4 );
 		}
 
 		/**
 		 * Update args
+		 *
+		 * @access public
 		 * @return array
 		 */
 		public function set_update_args() {
-			$theme_data                     = $this->get_theme_data();
-			$this->config[ 'theme_name' ]   = $theme_data['Name'];
-			$this->config[ 'version' ]      = $theme_data['Version'];
-			$this->config[ 'author' ]       = $theme_data['Author'];
-			$this->config[ 'homepage' ]     = esc_url_raw($theme_data['ThemeURI']);
-			$this->config[ 'new_version' ]  = str_replace( 'version/', '', $this->get_latest_tag() );
-			$this->config[ 'new_release' ]  = $this->get_latest_tag();
-			$this->config[ 'last_updated' ] = $this->get_date();
-			$this->config[ 'description' ]  = $this->get_description();
-			$this->config[ 'zip_url' ]      = 'https://github.com/woothemes/storefront/releases/download/' . $this->config[ 'new_release' ]. '/storefront.zip';
-			$this->config[ 'screenshot' ]   = 'https://raw.githubusercontent.com/woothemes/storefront/master/screenshot.png';
+			$theme_data                   = $this->get_theme_data();
+			$this->config['theme_name']   = $theme_data['Name'];
+			$this->config['version']      = $theme_data['Version'];
+			$this->config['author']       = $theme_data['Author'];
+			$this->config['homepage']     = esc_url_raw( $theme_data['ThemeURI'] );
+			$this->config['new_version']  = str_replace( 'version/', '', $this->get_latest_tag() );
+			$this->config['new_release']  = $this->get_latest_tag();
+			$this->config['last_updated'] = $this->get_date();
+			$this->config['description']  = $this->get_description();
+			$this->config['zip_url']      = 'https://github.com/woocommerce/storefront/releases/download/' . $this->config['new_release']. '/storefront.zip';
+			$this->config['screenshot']   = 'https://raw.githubusercontent.com/woocommerce/storefront/master/screenshot.png';
 		}
 
 		/**
 		 * Check wether or not the transients need to be overruled and API needs to be called for every single page load
 		 *
+		 * @access public
 		 * @return bool overrule or not
 		 */
 		public function overrule_transients() {
@@ -106,9 +127,10 @@ elseif ( ! class_exists('Storefront_Beta_Tester') ) {
 		/**
 		 * Get New Version from GitHub
 		 *
-		 * @since 1.0.0
+		 * @since   1.0.0
 		 * @version 1.0.2
-		 * @return int $version the version number
+		 * @access  public
+		 * @return  int $version the version number
 		 */
 		public function get_latest_tag() {
 			$tagged_version = get_site_transient( md5( $this->config['slug'] ) . '_latest_tag' );
@@ -145,9 +167,10 @@ elseif ( ! class_exists('Storefront_Beta_Tester') ) {
 		/**
 		 * Get GitHub Data from the specified repository
 		 *
-		 * @since 1.0.0
+		 * @since   1.0.0
 		 * @version 1.0.2
-		 * @return array $github_data the data
+		 * @access  public
+		 * @return  array $github_data the data
 		 */
 		public function get_github_data() {
 			if ( ! empty( $this->github_data ) ) {
@@ -177,7 +200,7 @@ elseif ( ! class_exists('Storefront_Beta_Tester') ) {
 		/**
 		 * Get update date
 		 *
-		 * @since 1.0.0
+		 * @access public
 		 * @return string $date the date
 		 */
 		public function get_date() {
@@ -188,18 +211,18 @@ elseif ( ! class_exists('Storefront_Beta_Tester') ) {
 		/**
 		 * Get theme description
 		 *
-		 * @since 1.0.0
+		 * @access public
 		 * @return string $description the description
 		 */
 		public function get_description() {
 			$_description = $this->get_github_data();
-			return ! empty( $_description->description ) ? $_description->description : __('Storefront is a robust and flexible WordPress theme, designed by WooCommerce creators WooThemes to help you make the most out of using WooCommerce to power your online store.', 'storefront-beta-tester');
+			return ! empty( $_description->description ) ? $_description->description : __( 'Storefront is a robust and flexible WordPress theme, designed by WooCommerce to help you make the most out of using WooCommerce to power your online store.', 'storefront-beta-tester' );
 		}
 
 		/**
 		 * Get Theme data
 		 *
-		 * @since 1.0.0
+		 * @access public
 		 * @return object $data the data
 		 */
 		public function get_theme_data() {
@@ -209,8 +232,8 @@ elseif ( ! class_exists('Storefront_Beta_Tester') ) {
 		/**
 		 * Hook into the theme update check and connect to GitHub
 		 *
-		 * @since 1.0.0
-		 * @param object  $transient the theme data transient
+		 * @access public
+		 * @param  object  $transient the theme data transient
 		 * @return object $transient updated theme data transient
 		 */
 		public function api_check( $transient ) {
@@ -230,8 +253,8 @@ elseif ( ! class_exists('Storefront_Beta_Tester') ) {
 			if ( version_compare( $this->config['new_version'], $this->config['version'], '>' ) ) {
 				$transient->response[ $this->config['slug'] ] = array(
 					'new_version' => $this->config['new_version'],
-					'package' => $this->config['zip_url'],
-					'url' => $this->config['github_url']
+					'package'     => $this->config['zip_url'],
+					'url'         => $this->config['github_url']
 				);
 			}
 
@@ -241,10 +264,10 @@ elseif ( ! class_exists('Storefront_Beta_Tester') ) {
 		/**
 		 * Get Theme info
 		 *
-		 * @since 1.0.0
-		 * @param bool    $false  always false
-		 * @param string  $action the API function being performed
-		 * @param object  $args   theme arguments
+		 * @access public
+		 * @param  bool   $false  always false
+		 * @param  string $action the API function being performed
+		 * @param  object $args   theme arguments
 		 * @return object $response the theme info
 		 */
 		public function get_theme_info( $false, $action, $response ) {
@@ -265,7 +288,7 @@ elseif ( ! class_exists('Storefront_Beta_Tester') ) {
 			$response->homepage       = $this->config['homepage'];
 			$response->requires       = $this->config['requires'];
 			$response->tested         = $this->config['tested'];
-			$response->screenshot_url = $this->config[ 'screenshot '];
+			$response->screenshot_url = $this->config['screenshot'];
 			$response->downloaded     = 0;
 			$response->last_updated   = $this->config['last_updated'];
 			$response->sections       = array( 'description' => $this->config['description'] );
@@ -278,6 +301,9 @@ elseif ( ! class_exists('Storefront_Beta_Tester') ) {
 
 		/**
 		 * Rename the downloaded zip
+		 *
+		 * @access public
+		 * @global $wp_filesystem
 		 */
 		public function upgrader_source_selection( $source, $remote_source, $upgrader ) {
 			global $wp_filesystem;
@@ -298,42 +324,45 @@ elseif ( ! class_exists('Storefront_Beta_Tester') ) {
 		/**
 		 * Load textdomain.
 		 *
+		 * @access public
 		 * @return void
 		 */
-		public function init_textdomain() {
+		public function load_textdomain() {
 			load_plugin_textdomain( 'storefront-beta-tester', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
 		}
 
 		/**
 		 * Show row meta on the plugin screen.
 		 *
-		 * @param mixed $links Plugin Row Meta
-		 * @param mixed $file  Plugin Base file
+		 * @access public
+		 * @param  mixed $links Plugin Row Meta
+		 * @param  mixed $file  Plugin Base file
 		 * @return array
 		 */
 		public function plugin_meta_links( $links, $file, $data, $status ) {
 			if ( $file == plugin_basename( __FILE__ ) ) {
-				$author1 = '<a href="' . $data[ 'AuthorURI' ] . '">' . $data[ 'Author' ] . '</a>';
-				$author2 = '<a href="http://jameskoster.co.uk/">James Koster</a>';
-				$author3 = '<a href="https://bradgriffin.me/">Brad Griffin</a>';
-				$links[ 1 ] = sprintf( __( 'By %s' ), sprintf( __( '%s and %s and %s' ), $author1, $author2, $author3 ) );
+				$author1  = '<a href="' . $data[ 'AuthorURI' ] . '">' . $data[ 'Author' ] . '</a>';
+				$author2  = '<a href="http://jameskoster.co.uk/">James Koster</a>';
+				$author3  = '<a href="https://bradgriffin.me/">Brad Griffin</a>';
+				$links[1] = sprintf( __( 'By %s' ), sprintf( __( '%s and %s and %s' ), $author1, $author2, $author3 ) );
 			}
+
 			return $links;
 		}
 
 	} // END class
 
-	register_activation_hook(__FILE__, array('Storefront_Beta_Tester', 'activate'));
+	register_activation_hook( __FILE__, array( 'Storefront_Beta_Tester', 'activate' ) );
 
-	add_action('admin_init', array('Storefront_Beta_Tester', 'instance'));
+	add_action( 'admin_init', array( 'Storefront_Beta_Tester', 'instance' ) );
 
 } // END if theme installed / class exists
 
 /**
  * Storefront Not Installed Notice
  */
-if ( ! function_exists('woo_storefront_not_installed') ) {
-	function woo_storefront_not_installed() {
-		echo '<div class="notice notice-error is-dismissible"><p>' . sprintf( __('Storefront Beta Tester requires %s to be installed.', 'storefront-beta-tester'), '<a href="' . esc_url( wp_nonce_url( self_admin_url( 'update.php?action=install-theme&theme=storefront' ), 'install-theme_storefront' ) ) . '">Storefront</a>') . '</p></div>';
+if ( ! function_exists( 'storefront_not_installed' ) ) {
+	function storefront_not_installed() {
+		echo '<div class="notice notice-error is-dismissible"><p>' . sprintf( __( 'Storefront Beta Tester requires %s to be installed.', 'storefront-beta-tester'), '<a href="' . esc_url( wp_nonce_url( self_admin_url( 'update.php?action=install-theme&theme=storefront' ), 'install-theme_storefront' ) ) . '">Storefront</a>' ) . '</p></div>';
 	}
 }
