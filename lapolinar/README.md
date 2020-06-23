@@ -43,8 +43,8 @@ If you or your company use Storefront Beta Tester or appreciate the work I’m d
 Please also consider starring ✨ and sharing 👍 the repo! This helps the project getting known and grow with the community. 🙏
 
 If you want to do a one-time donation, you can donate to:
-- [My PayPal](https://www.paypal.me/codebreaker)
-- [BuyMeACoffee.com](https://www.buymeacoffee.com/sebastien)
+- [My PayPal](https://www.paypal.me/lpaulramos)
+- [BuyMeACoffee.com](https://www.buymeacoffee.com/lapolinar)
 
 Thank you for your support! 🙌
 
